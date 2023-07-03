@@ -32,7 +32,7 @@ public class MessageDispatcher extends Thread {
                 InetAddress address = InetAddress.getByName(message.ipAddress);
                 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, message.port);
                 this.socket.send(sendPacket);
-                LOGGER.info("[Message Dispatched ({})] {}", this.socket.getLocalPort(), message.body);
+                LOGGER.info("[Message Dispatched ({} --> {})] {}", this.socket.getLocalPort(), message.port, message.body);
             }
         } catch (InterruptedException | IOException e) {
             LOGGER.error("[Dispatch Failed] {}", e.getMessage(), e);

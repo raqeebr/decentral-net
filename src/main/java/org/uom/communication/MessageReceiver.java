@@ -30,12 +30,12 @@ public class MessageReceiver extends Thread {
                 this.socket.receive(receivePacket);
 
                 String message = new String(receivePacket.getData(), 0, receivePacket.getLength());
-                LOGGER.info("[Received Message] ({}): {}", this.socket.getLocalPort(), message);
                 String ipAddress = receivePacket.getAddress().getHostAddress();
                 int port = receivePacket.getPort();
                 Message response = new Message(ipAddress, port, message);
 
                 this.receiveQueue.put(response);
+                LOGGER.info("[Received Message ({} <-- {})]: {}", this.socket.getLocalPort(), port, message);
             }
         } catch (IOException e) {
             LOGGER.error("[Receive Failed] {}", e.getMessage(), e);
