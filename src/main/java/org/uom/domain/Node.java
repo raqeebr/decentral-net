@@ -93,20 +93,10 @@ public class Node {
     public void stop() {
         this.unregister();
         this.leave();
-        while (!this.sendQueue.isEmpty()) {
-            try {
-                synchronized (this) {
-                    this.wait(100);
-                }
-            } catch (InterruptedException e) {
-                LOGGER.error("[Wait for Dispatch Failed ({})] {}", this.port, e.getMessage(), e);
-            }
-        }
+
         this.sender.stopDispatching();
         this.receiver.stopReceiving();
-        if (this.socket.isClosed()) {
-            this.socket.close();
-        }
+
         LOGGER.info("[Node Disconnect] Stopped node ({}) {}", this.port, this.username);
     }
 
@@ -180,6 +170,15 @@ public class Node {
         }
 
         LOGGER.info("[Search Forward ({})] No previous query hits for '{}'", this.port, query);
+
+        if (initiatorPort == this.port && this.visitedNodes.containsKey(query)) {
+            LOGGER.info("[Search Forward ({})] Searching from last visited node for '{}'", this.port, query);
+            List<Neighbour> prevVisitedNodes = this.visitedNodes.get(query);
+            Neighbour neighbour = prevVisitedNodes.get(prevVisitedNodes.size() - 1);
+            this.sendSearchReqToNeighbour(query, initiatorIp, initiatorPort, --currentHops, neighbour);
+            return;
+        }
+
         nodesToForward = this.getNeighbours()
             .stream()
             .filter(not(n -> n.ipAddress().equals(initiatorIp) && n.port() == initiatorPort))
